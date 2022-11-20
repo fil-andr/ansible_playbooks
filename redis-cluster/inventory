@@ -1,0 +1,11 @@
+#############redis
+
+[redis_master_host]
+redis-master
+
+[redis_slave_hosts]
+redis-slave
+
+[redis_hosts:children]
+redis_master_host
+redis_slave_hosts

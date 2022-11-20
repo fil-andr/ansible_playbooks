@@ -1,0 +1,39 @@
+---
+- name: Install redis_server
+  hosts: redis_hosts
+  tasks:
+
+  - name: Install redis server
+    ansible.builtin.yum:
+      name:
+        - redis
+      state: present
+
+  - name: Enable service redis
+    ansible.builtin.service:
+      name: redis
+      enabled: yes
+
+  - name: change config
+    ansible.builtin.lineinfile:
+      path: /etc/redis.conf
+      regexp: '^bind'
+      line: bind {{ansible_default_ipv4.address}} 6379
+
+- name: change config slave servers
+  hosts: redis_slave_hosts
+  tasks:
+
+  - name: add slaveof to config
+    ansible.builtin.lineinfile:
+      path: /etc/redis.conf
+      line: slaveof {{ hostvars[ 'redis-master' ].ansible_default_ipv4.address }} 6379
+
+- name: restart services redis on master and slaves servers
+  hosts: redis_hosts
+  tasks:
+
+  - name: Restart service httpd, in all cases
+    ansible.builtin.service:
+      name: redis
+      state: restarted
