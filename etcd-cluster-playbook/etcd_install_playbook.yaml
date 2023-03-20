@@ -1,0 +1,54 @@
+---
+- name: Install etcd_cluster
+  hosts: etcd_hosts
+  vars:
+      etcd_cluster_token: 'etcd-test-cluster'
+
+  tasks:
+  - name: Create a directory for conf file if it does not exist
+    ansible.builtin.file:
+      path: /etc/etcd
+      state: directory
+      mode: '0755'
+
+  - name: Create a directory for data files if it does not exist
+    ansible.builtin.file:
+      path: /var/lib/etcd
+      state: directory
+      mode: '0755'
+
+
+  - name: Copy binares files
+    ansible.builtin.copy:
+      src: ./bin/{{ item }}
+      dest: /usr/bin/{{ item }}
+      owner: root
+      group: root
+      mode: u=rwx,g=rx,o=rx
+    with_items:
+     - "etcd"
+     - "etcdctl"
+
+  - name: Copy service unit file
+    ansible.builtin.copy:
+      src: ./unit-file/etcd.service
+      dest: /etc/systemd/system/etcd.service
+      owner: root
+      group: root
+      mode: u=rwx,g=rx,o=rx
+
+  - name: Config file template build
+    template:
+      src: ./conf_template/etcd.conf.j2
+      dest: /etc/etcd/etcd.conf
+
+
+  - name: Enable service etcd, and not touch the state
+    ansible.builtin.service:
+      name: etcd.service
+      enabled: yes
+
+  - name: Start service etcd, if not started
+    ansible.builtin.service:
+      name: etcd.service
+      state: started

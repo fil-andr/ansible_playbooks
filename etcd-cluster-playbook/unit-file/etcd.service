@@ -1,0 +1,16 @@
+[Unit]
+Description=etcd key-value store
+Documentation=https://github.com/etcd-io/etcd
+After=network.target
+
+[Service]
+User=root
+Type=notify
+ExecStart=/usr/bin/etcd
+Restart=always
+RestartSec=10s
+LimitNOFILE=40000
+EnvironmentFile=/etc/etcd/etcd.conf
+
+[Install]
+WantedBy=multi-user.target
